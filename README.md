@@ -37,6 +37,7 @@ Formato dos arquivos:
 
 ``` r
 library(tidyverse)
+library(geobr)
 ```
 
 #### Carregando os polígonos do Brasil

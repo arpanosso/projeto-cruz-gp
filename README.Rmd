@@ -54,6 +54,7 @@ Formato dos arquivos:
 
 ```{r}
 library(tidyverse)
+library(geobr)
 ```
 
 
