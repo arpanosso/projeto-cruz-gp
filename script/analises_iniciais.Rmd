@@ -1,0 +1,536 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  message = FALSE,
+  error = FALSE,
+  warning = FALSE,
+  eval=FALSE,
+  comment = "#>"
+)
+```
+
+# X~CO2~ E SIF NA AMAZÔNIA LEGAL: UMA ANÁLISE ESPAÇO-TEMPORAL COM APRENDIZADO DE MÁQUINA
+## 👨‍🔬 Autores
+
+-   **Gabriela Pereira da Cruz**\
+    Graduanda em Engenharia Agronômica - FCAV/Unesp\
+    Email: [gabriela.p.cruz\@unesp.br](mailto:gabriela.p.cruz@unesp.br)
+
+
+-   **Prof. Dr. Alan Rodrigo Panosso**\
+    Coorientador — Departamento de Ciências Exatas - FCAV/Unesp\
+    Email: [alan.panosso\@unesp.br](mailto:alan.panosso@unesp.br)
+
+
+## Carregando pacotes
+```{r}
+library(tidyverse)
+library(ggridges)
+library(ggpubr)
+library(geobr)
+library(gstat)
+library(vegan)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+```
+
+#Carregando polígono do Brasil
+```{r}
+country_br <- geobr::read_country(showProgress = FALSE)
+```
+
+############################### DADOS SIF #################################
+
+
+# Carregando os dados de SIF
+```{r}
+data_set_sif <- readr::read_rds("../data/data-set-sif-amazon.rds")
+```
+
+
+# fAXINA E TRATAMENTO DOS DADOS DE SIF
+```{r}
+data_set_sif <- data_set_sif %>%
+  filter(quality_flag==0) |>
+  dplyr::mutate(
+    #time = lubridate:: as_datetime(time,
+                                   #origin = "1990-01-01 00:00:00",
+                                   #tz = "America/Sao_Paulo"),
+    year = lubridate:: year(time),
+    month = lubridate::month(time),
+    day = lubridate::day(time),
+    date = make_date(year, month, day),
+    sif = (daily_sif757 + 1.5*daily_sif771)/2
+    ) |>
+  select(longitude, latitude, date, sif, daily_sif757, daily_sif771, quality_flag, year, month, day)
+
+#dplyr::glimpse(data_set_sif)
+#summary(data_set_sif$date)
+#write_rds(data_set_sif, "../data/data-set-sif-amazon.rds")
+
+```
+
+
+# Visualização de Histograma SIF
+```{r}
+data_set_sif |>
+  # filter(year == 2020) |> 
+  ggplot(aes(x=daily_sif757)) +
+  geom_histogram(color="black",fill="gray",
+                          bins = 30) +
+  coord_cartesian(xlim = c(-2, 2) , ylim = c(0, 600000))+
+  facet_wrap(~year, scales = "free") +
+  theme_bw()
+```
+
+ #Estatistica do SIF - SEM tendencia
+```{r}
+dados_sif_mensais <- data_set_sif %>%
+  group_by(year, month) %>%
+  summarise(
+    sif_media = mean(sif , na.rm = TRUE),
+    sif_sd = sd(sif , na.rm = TRUE),
+    .groups = "drop"  
+  ) %>%
+  mutate(
+    data = as.Date(paste(year, month, "15", sep = "-")),
+    epoca = case_when(
+      month %in% 1:6  ~ "1° semestre (Jan-Jun)",
+      month %in% 7:12 ~ "2° semestre (Jul-Dez)"
+    ),
+    epoca = factor(epoca, levels = c("1° semestre (Jan-Jun)", "2° semestre (Jul-Dez)"))
+  ) %>%
+  arrange(data)
+
+ggplot(dados_sif_mensais, aes(x = data, y = sif_media, color = epoca, fill = epoca)) +
+  
+  geom_ribbon(aes(ymin = sif_media - sif_sd, ymax = sif_media + sif_sd), alpha = 0.3, color = NA) +
+  
+  geom_line(linewidth = 1) +
+  
+  geom_point(size = 2.5) +
+  
+  scale_color_manual(values = c("1° semestre (Jan-Jun)" = "blue", "2° semestre (Jul-Dez)" = "orange")) +
+  scale_fill_manual(values = c("1° semestre (Jan-Jun)" = "blue", "2° semestre (Jul-Dez)" = "orange")) +
+  
+  scale_x_date(
+    breaks = "1 year",  
+    date_labels = "%b %Y"
+  ) +
+  
+  labs(
+    # title = "Série Temporal Mensal de XCO₂ SEM tendencia",
+    # subtitle = "Média e Desvio Padrão para cada mês, com cores por época",
+    x = "Data",
+    y = "Concentração Média de SIF (Wm−2 sr−1 μm−1)",
+    color = "Época",
+    fill = "Época"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+ 
+ 
+
+
+#################### DADOS DE XCO2 ################################
+
+# Carregando os dados de xco2 e filtrar
+
+```{r}
+# data_set_xco2_amazon <- readr::read_rds("../data/data-set-xco2-amazon00.rds")
+# 
+#  data_set_xco2_amazon <- data_set_xco2_amazon %>%
+#    mutate(
+#      date = lubridate::make_date(year, month, day)
+#    )
+# # write_rds(data_set_xco2_amazon, "../data/data-set-xco2-amazon.rds")
+```
+
+```{r}
+## Chamando meu banco de XCO2
+
+#  data_set_xco2_amazon <- readr::read_rds("../data/data-set-xco2-amazon.rds")
+# 
+#  data_set_xco2_anomal <- data_set_xco2_amazon |>
+# filter(xco2_quality_flag == 0) |>
+#    group_by(date) |>
+#    nest() |>
+#    mutate(nobs = purrr::map_int(data, nrow)) |>
+#    filter(nobs >= 5) |>
+#    ungroup() |>
+#    mutate(data = purrr::map(data, ~ dplyr::mutate(.x, xco2_anomalia = .x$xco2 - median(.x$xco2, na.rm = TRUE)))
+#    ) |>
+#    unnest(data)
+#  glimpse(data_set_xco2_anomal)
+# 
+#  #write_rds(data_set_xco2_anomal, "../data/data-set-xco2-anomal.rds")
+```
+
+# Criando coluna de semestre
+```{r}
+data_set_xco2_anomal <- readr::read_rds("../data/data-set-xco2-anomal.rds")
+
+data_set_xco2_anomal <- data_set_xco2_anomal %>%
+  mutate(
+    epoca = case_when(
+      month %in% 1:6   ~ "Jan_Jun",
+      month %in% 7:12  ~ "Jul_Dez"
+    )
+  )
+head(data_set_xco2_amazon)
+```
+
+# Visualização de Histograma xco2
+```{r}
+data_set_xco2_anomal |>
+  filter(year <2025) |>
+  ggplot(aes(x=xco2)) +
+  geom_histogram(color="black",fill="gray",
+                          bins = 30) +
+  coord_cartesian(xlim = c(395, 435) , ylim = c(0, 70000))+
+  facet_wrap(~year, scales = "free") +
+  theme_bw()
+```
+
+
+# Tendencia regional, r2 e plotagem de gráfico
+```{r}
+data_set_xco2_anomal |>
+ sample_n(10000) |>
+ drop_na() |>
+ mutate( year = year - min(year)) |>
+ ggplot(aes(x=year, y=xco2)) +
+ geom_point() +
+ geom_point(shape=21,color="black",fill="gray") +
+ geom_smooth(method = "lm") +
+ stat_regline_equation(aes(
+ label =  paste(..eq.label.., ..rr.label.., sep = "*plain(\",\")~~"))) +
+ theme_bw() +
+ labs(x="Ano",y="xco2")
+```
+
+# Análise da regressão linear simples para caracterização da tendencia XCO2
+```{r}
+mod_trend_xco2 <- lm(xco2 ~ year,
+                      data = data_set_xco2_anomal |>
+                        filter(xco2_quality_flag == 0) |>
+                        drop_na() |>
+                        mutate( year = year - min(year))
+ )
+ mod_trend_xco2
+
+ summary.lm(mod_trend_xco2)
+```
+
+
+# retirando a tendencia e separando por quadrimestre, estou retirando # a tendencia e substituindo o arquivo que existia com tendencia, #para o sem tendencia
+
+```{r}
+ a_co2 <- mod_trend_xco2$coefficients[[1]]
+ b_co2 <- mod_trend_xco2$coefficients[[2]]
+
+ data_set_xco2_anomal_sem_tendencia <- data_set_xco2_anomal |>
+   filter(xco2_quality_flag == 0,
+          year >= 2020 & year <= 2025) |>
+   mutate(
+     year_modif = year -min(year),
+     xco2_est = a_co2+b_co2*year_modif,
+     delta = xco2_est-xco2,
+     xco2_detrend = (a_co2-delta) - (mean(xco2) - a_co2)
+   ) |>
+   select(-c( time, xco2_quality_flag,xco2_incerteza,
+             path,year_modif:delta)) |>
+   rename(xco2_trend = xco2,
+          xco2 = xco2_detrend) |>
+   mutate(
+     xco2_anomalia = xco2 - median(xco2, na.rm = TRUE),
+     .after = xco2
+   ) |>
+   ungroup()
+```
+
+
+# Visualização de Histograma Anomalia de XCO2
+```{r}
+data_set_xco2_anomal_sem_tendencia |>
+  filter(year <2025) |>
+  ggplot(aes(x=xco2_anomalia)) +
+  geom_histogram(color="black",fill="gray",
+                          bins = 30) +
+  #coord_cartesian(xlim = c(-2, 2) , ylim = c(0, 350000))+
+  facet_wrap(~year, scales = "free")+
+  theme_bw()
+```
+ 
+
+ # Plotando gráfico da distribuição de xco2 com tendencia por ano
+ # separado por semestre
+
+```{r}
+data_set_xco2_anomal %>%
+
+   ggplot(aes(x = xco2, y = as.factor(year))) +
+
+   geom_density_ridges(
+     rel_min_height = 0.03,
+     alpha = .6,
+     color = "black"
+   ) +
+
+   scale_fill_viridis_d(name = "Epoca") +
+   coord_cartesian(xlim = c(405, 425)) +
+   theme_ridges() +
+
+   labs(
+     # title = "Distribuição Epoca de XCO₂ por Ano",
+     x = expression(paste(CO[2]," (ppm)")),
+     y = "Ano"
+   )
+```
+ 
+ # Plotando gráfico da distribuição de xco2 sem tendencia por ano
+ # separado por semestre
+```{r}
+data_set_xco2_anomal_sem_tendencia %>%
+
+   ggplot(aes(x = xco2, y = as.factor(year))) +
+
+   geom_density_ridges(
+     rel_min_height = 0.03,
+     alpha = .6,
+     color = "black"
+   ) +
+
+   scale_fill_viridis_d(name = "Epoca") +
+   coord_cartesian(xlim = c(400, 415)) +
+   theme_ridges() +
+
+   labs(
+     title = "Distribuição Epoca de XCO₂ por Ano",
+     x = "Concentração de XCO₂ (ppm)",
+     y = "Ano"
+   )
+```
+ 
+  # Anomalia de xco2, criando a coluna.
+```{r}
+# data_set_xco2_com_tendencia <- data_set_xco2 %>%
+# 
+#   filter(xco2_quality_flag == 0,
+#         year >= 2020 & year <= 2025) %>%
+# 
+#  group_by(year, month) %>% #MON
+# 
+#   mutate(
+#     xco2_anomaly = xco2 - median(xco2, na.rm = TRUE)
+#   ) %>%
+# 
+#  ungroup()
+```
+  
+ # Anomalia de xco2 com tendencia
+```{r}
+data_set_xco2_anomal %>%
+   ggplot(aes(x = xco2_anomalia, y = as.factor(year))) +
+
+   geom_density_ridges(
+     rel_min_height = 0.03,
+     alpha = .6,
+     color = "black"
+   ) +
+     geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+
+     scale_fill_manual(
+       name = "Epoca",
+       values = c(
+         "Chuvosa. (Jan-Jun)" = "blue", # Tom de roxo/lilás
+         "Seca. (Jul-Dez)" = "yellow"  # Tom de amarelo claro
+       )
+     ) +
+  coord_cartesian(xlim = c(-5, 5))+
+  theme_ridges()
+```
+ 
+# Anomalia de xco2 sem tendencia
+```{r}
+data_set_xco2_anomal_sem_tendencia %>%
+    ggplot(aes(x = xco2_anomalia, y = as.factor(year))) +
+
+    geom_density_ridges(
+      rel_min_height = 0.03,
+      alpha = .6,
+      color = "black"
+    ) +
+    geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+
+    scale_fill_manual(
+      name = "Epoca",
+      values = c(
+        "Chuvosa. (Jan-Jun)" = "blue",
+        "Seca. (Jul-Dez)" = "yellow"
+      )
+    ) +
+    coord_cartesian(xlim = c(-5, 5))+
+  theme_ridges()
+```
+
+# Observando dados de anomalia
+```{r}
+ dados_temporais <- data_set_xco2_anomal %>%
+  mutate(
+      epoca = case_when(
+        month %in% 1:6  ~ "Chuvosa (Jan-Jun)",
+        month %in% 7:12 ~ "Seca (Jul-Dez)"
+      )
+    ) %>%
+  mutate(
+      epoca = factor(epoca, levels = c("Chuvosa (Jan-Jun)", "Seca (Jul-Dez)"))
+    ) %>%
+  group_by(year, epoca) %>%
+  summarise(
+      anomalia_media = mean(xco2_anomalia, na.rm = TRUE),
+      desvio_padrao = sd(xco2_anomalia, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+  mutate(
+      mes_representativo = case_when(
+        epoca == "Chuvosa (Jan-Jun)" ~ 3,
+        epoca == "Seca (Jul-Dez)"    ~ 9
+      ),
+      data = as.Date(paste(year, mes_representativo, "15", sep = "-"))
+    )
+print(dados_temporais)
+```
+
+
+#Estatistica do xco2 - com tendencia
+```{r}
+
+dados_xco2_mensais <- data_set_xco2_anomal %>%
+  group_by(year, month) %>%
+  summarise(
+    xco2_media = mean(xco2, na.rm = TRUE),
+    xco2_sd = sd(xco2, na.rm = TRUE),
+    .groups = "drop"  
+  ) %>%
+  mutate(
+    data = as.Date(paste(year, month, "15", sep = "-")),
+    epoca = case_when(
+      month %in% 1:6  ~ "Chuvosa (Jan-Jun)",
+      month %in% 7:12 ~ "Seca (Jul-Dez)"
+    ),
+    epoca = factor(epoca, levels = c("Chuvosa (Jan-Jun)", "Seca (Jul-Dez)"))
+  ) %>%
+  arrange(data)
+
+ggplot(dados_xco2_mensais, aes(x = data, y = xco2_media, color = epoca, fill = epoca)) +
+  
+  geom_ribbon(aes(ymin = xco2_media - xco2_sd, ymax = xco2_media + xco2_sd), alpha = 0.3, color = NA) +
+  
+  geom_line(linewidth = 1) +
+  
+  geom_point(size = 2.5) +
+  
+  scale_color_manual(values = c("Chuvosa (Jan-Jun)" = "blue", "Seca (Jul-Dez)" = "orange")) +
+  scale_fill_manual(values = c("Chuvosa (Jan-Jun)" = "blue", "Seca (Jul-Dez)" = "orange")) +
+  
+  scale_x_date(
+    breaks = "1 year",  
+    date_labels = "%b %Y"
+  ) +
+  
+  labs(
+    title = "Série Temporal Mensal de XCO2 com tendencia",
+    subtitle = "Média e Desvio Padrão para cada mês, com cores por época",
+    x = "Data",
+    y = "Concentração Média de XCO₂ (ppm)",
+    color = "Época",
+    fill = "Época"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+ #Estatistica do xco2 - SEM tendencia
+```{r}
+library(ggplot2)
+library(dplyr)
+
+dados_xco2_mensais <- data_set_xco2_anomal_sem_tendencia %>%
+  group_by(year, month) %>%
+  summarise(
+    xco2_media = mean(xco2, na.rm = TRUE),
+    xco2_sd = sd(xco2, na.rm = TRUE),
+    .groups = "drop"  
+  ) %>%
+  mutate(
+    data = as.Date(paste(year, month, "15", sep = "-")),
+    epoca = case_when(
+      month %in% 1:6  ~ "1° semestre (Jan-Jun)", # Corrigido para "semestre"
+      month %in% 7:12 ~ "2° semestre (Jul-Dez)"
+    ),
+    epoca = factor(epoca, levels = c("1° semestre (Jan-Jun)", "2° semestre (Jul-Dez)"))
+  ) %>%
+  arrange(data)
+
+ggplot(dados_xco2_mensais, aes(x = data, y = xco2_media, color = epoca, fill = epoca)) +
+  
+  geom_ribbon(aes(ymin = xco2_media - xco2_sd, ymax = xco2_media + xco2_sd), alpha = 0.3, color = NA) +
+  
+  geom_line(linewidth = 1) +
+  
+  geom_point(size = 2.5) +
+  
+  scale_color_manual(values = c("1° semestre (Jan-Jun)" = "blue", "2° semestre (Jul-Dez)" = "orange")) +
+  scale_fill_manual(values = c("1° semestre (Jan-Jun)" = "blue", "2° semestre (Jul-Dez)" = "orange")) + # Alterado para "lightblue" para ficar mais claro
+  
+  scale_x_date(
+    breaks = "1 year",  
+    date_labels = "%b %Y"
+  ) +
+  
+  labs(
+    x = "Data",
+    y = "Concentração Média de XCO₂ (ppm)",
+    color = "Época",
+    fill = "Época"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
