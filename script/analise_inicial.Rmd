@@ -1,0 +1,20 @@
+---
+title: "analise_inicial"
+output: html_document
+date: "2026-06-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(geobr)
+```
+
+```{r}
+data_set_sif_amazon <- readRDS("data/data-set-sif-amazon.rds")
+data_set_xco2_amazon <- readRDS("data/data-set-xco2-amazon.rds")
+```
+
