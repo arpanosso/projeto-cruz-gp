@@ -5,12 +5,12 @@
 
 ## 👩‍🔬 Autores
 
-- **Gabriela Pereira da Cruz**  
-  Graduanda em Engenharia Agronômica - FCAV/Unesp  
+- **Gabriela Pereira da Cruz**\
+  Graduanda em Engenharia Agronômica - FCAV/Unesp\
   Email: <gabriela.p.cruz@unesp.br>
 
-- **Prof. Dr. Alan Rodrigo Panosso**  
-  Coorientador — Departamento de Ciências Exatas - FCAV/Unesp  
+- **Prof. Dr. Alan Rodrigo Panosso**\
+  Coorientador — Departamento de Ciências Exatas - FCAV/Unesp\
   Email: <alan.panosso@unesp.br>
 
 ## 📁 Etapas do Projeto
@@ -79,7 +79,7 @@ data_set_xco2 <- readr::read_rds("data/data-set-xco2-amazon.rds") |>
     day = lubridate::day(time),
   )
 tictoc::toc()
-#> 1.7 sec elapsed
+#> 1.93 sec elapsed
 ```
 
 Resumo rápido do banco de dados
@@ -250,7 +250,7 @@ data_set_sif <- readr::read_rds("data/data-set-sif.rds") |>
     day = lubridate::day(time),
   )
 tictoc::toc()
-#> 17.17 sec elapsed
+#> 17.67 sec elapsed
 ```
 
 Resumo rápido do banco de dados
@@ -911,3 +911,178 @@ ggplot(dados_xco2_mensais, aes(x = data, y = xco2_media, color = epoca, fill = e
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+
+## Agregar as bases
+
+``` r
+data_set_xco2_anomal_sem_tendencia |> glimpse()
+#> Rows: 945,915
+#> Columns: 17
+#> $ date            <date> 2020-01-02, 2020-01-02, 2020-01-02, 2020-01-02, 2020-…
+#> $ longitude       <dbl> -60.37844, -60.37955, -60.38064, -60.37898, -60.37367,…
+#> $ latitude        <dbl> -1.831812, -1.823639, -1.815491, -1.818069, -1.839675,…
+#> $ xco2_trend      <dbl> 411.7547, 412.6686, 411.9518, 411.3929, 411.8737, 411.…
+#> $ year            <dbl> 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, …
+#> $ month           <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+#> $ day             <int> 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, …
+#> $ flag_norte      <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, …
+#> $ flag_nordeste   <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+#> $ flag_sul        <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+#> $ flag_centroeste <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+#> $ flag_suldeste   <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+#> $ flag_amazon     <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+#> $ xco2_anomalia   <dbl> -0.01638794, 0.89755249, 0.18069458, -0.37820435, 0.10…
+#> $ nobs            <int> 69, 69, 69, 69, 69, 69, 69, 69, 69, 69, 69, 69, 69, 69…
+#> $ epoca           <chr> "Jan_Jun", "Jan_Jun", "Jan_Jun", "Jan_Jun", "Jan_Jun",…
+#> $ xco2            <dbl> 407.4024, 408.3163, 407.5994, 407.0406, 407.5214, 407.…
+```
+
+``` r
+data_set_sif_amazon |> glimpse()
+#> Rows: 4,880,724
+#> Columns: 10
+#> $ longitude    <dbl> -45.70892, -45.71320, -45.71759, -45.83588, -45.83600, -4…
+#> $ latitude     <dbl> -10.237732, -10.237305, -10.217163, -9.704224, -9.713989,…
+#> $ date         <date> 2020-01-01, 2020-01-01, 2020-01-01, 2020-01-01, 2020-01-…
+#> $ sif          <dbl> 0.17767024, 0.07650542, 0.15871572, -0.01399350, 0.214861…
+#> $ daily_sif757 <dbl> -0.02461338, -0.01064396, 0.01721573, -0.17687321, 0.2861…
+#> $ daily_sif771 <dbl> 0.25330257, 0.10910320, 0.20014381, 0.09925747, 0.0956955…
+#> $ quality_flag <int> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+#> $ year         <dbl> 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, 202…
+#> $ month        <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+#> $ day          <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+```
+
+``` r
+data_set_xco2_anomal_sem_tendencia |> 
+  filter(year == 2020) |> 
+  ggplot(aes(longitude, latitude)) +
+  geom_point(color="blue")+
+  geom_point(data = data_set_sif_amazon |> filter(year == 2020) |> 
+               sample_n(10000),
+             aes(longitude,latitude),color="red", size=1)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
+
+## Agregação
+
+Criar o geadeado para a amazônia
+
+``` r
+
+mat_coord <- amazon$geometry[[1]] |> as.matrix()
+
+dist <- 0.5
+lon_min <-min(mat_coord[,1])
+lon_max <-max(mat_coord[,1])
+lat_min <-min(mat_coord[,2])
+lat_max <-max(mat_coord[,2]) 
+grid_am <- expand.grid(lon=seq(lon_min,lon_max,dist),
+                       lat=seq(lat_min,lat_max,dist))
+amazon |> 
+  ggplot() +
+  geom_sf(fill="green4") +
+  theme_bw() +
+  geom_point(data=grid_am,aes(lon,lat))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-41-1.png)<!-- -->
+
+criando a função de def_pol
+
+``` r
+def_pol <- function(x, y, pol){
+  as.logical(sp::point.in.polygon(point.x = x,
+                                  point.y = y,
+                                  pol.x = pol[,1],
+                                  pol.y = pol[,2]))
+}
+```
+
+Filtrando os pontos do grid_am em função dos limites da amazônia legal
+
+``` r
+grid_am_cut <- grid_am |>
+ mutate(
+    flag_am = def_pol(lon,lat,mat_coord),
+    )
+plot(grid_am_cut$lon[grid_am_cut$flag_am],grid_am_cut$lat[grid_am_cut$flag_am])
+```
+
+![](README_files/figure-gfm/unnamed-chunk-43-1.png)<!-- --> Observado a
+tabela do numero de observarções por ano e mês
+
+``` r
+table(data_set_sif_amazon$year, data_set_sif_amazon$month)
+#>       
+#>             1      2      3      4      5      6      7      8      9     10
+#>   2020  43722  36087  64328  60429  96955 127991 169798 152372 159349 104461
+#>   2021  55167  38753  61544  73699 120300 115531 145476  94815 140819  93000
+#>   2022  65728  38743  57488  87831  95041 103496 173640 137748 156293  99375
+#>   2023  60425  31800  66159  72825  97156 129907 188325 148389 155218  59541
+#>   2024  29148  27273  26394      0      0      0  72708  99636  70805  59561
+#>       
+#>            11     12
+#>   2020  71557  59992
+#>   2021  67162  41446
+#>   2022  94228  61521
+#>   2023  24336  16719
+#>   2024  48980  29534
+```
+
+Correção dos meses 4-6 para o ano de 2024 - SIF
+
+``` r
+# sif_media <- grid_am_cut |> 
+#   filter(flag_am) |>  
+#   select(-flag_am) |>
+#   group_by(lon, lat) |>
+#   reframe(mes = 4:6) |>
+#   arrange(mes) |> 
+#   mutate(sif_est =0)
+# 
+# for(k in 1:nrow(sif_media)){
+#   sif_aux <- data_set_sif_amazon |>
+#     filter(month == sif_media$mes[k]) 
+#   d <- sqrt((sif_aux$longitude-sif_media$lon[k])^2+
+#               (sif_aux$latitude-sif_media$lat[k])^2)
+#   sif_media$sif_est[k] = data.frame(do=d[order(d)],po=order(d),sif=sif_aux$sif[order(d)]) |> 
+#     filter(do <=.5) |> 
+#     pull(sif) |> mean(na.rm=TRUE)
+# }
+# data_set_sif_amazon |> glimpse()
+# sif_media$sif_est |> is.na() |> sum()
+# write_rds(sif_media,"data-raw/sif_estimada_2024.rds")
+sif_estimada_2024 <- read_rds("data-raw/sif_estimada_2024.rds") |> 
+  rename( month = mes , longitude=lon, latitude=lat, sif = sif_est) |> 
+  mutate(day = 1,
+         year = 2024,
+         quality_flag=0,
+         daily_sif771 = NA,
+         daily_sif757 = NA,
+         date=make_date(year,month,day))
+data_set_sif_amazon <- data_set_sif_amazon |> rbind(sif_estimada_2024)
+```
+
+Observado a tabela do número de observarções por ano e mês após correção
+
+``` r
+table(data_set_sif_amazon$year, data_set_sif_amazon$month)
+#>       
+#>             1      2      3      4      5      6      7      8      9     10
+#>   2020  43722  36087  64328  60429  96955 127991 169798 152372 159349 104461
+#>   2021  55167  38753  61544  73699 120300 115531 145476  94815 140819  93000
+#>   2022  65728  38743  57488  87831  95041 103496 173640 137748 156293  99375
+#>   2023  60425  31800  66159  72825  97156 129907 188325 148389 155218  59541
+#>   2024  29148  27273  26394   1648   1648   1648  72708  99636  70805  59561
+#>       
+#>            11     12
+#>   2020  71557  59992
+#>   2021  67162  41446
+#>   2022  94228  61521
+#>   2023  24336  16719
+#>   2024  48980  29534
+```
+
+Agregação das Bases

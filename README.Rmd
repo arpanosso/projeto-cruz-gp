@@ -725,3 +725,117 @@ ggplot(dados_xco2_mensais, aes(x = data, y = xco2_media, color = epoca, fill = e
   )
 ```
  
+## Agregar as bases
+
+
+```{r}
+data_set_xco2_anomal_sem_tendencia |> glimpse()
+```
+
+
+```{r}
+data_set_sif_amazon |> glimpse()
+```
+
+
+```{r}
+data_set_xco2_anomal_sem_tendencia |> 
+  filter(year == 2020) |> 
+  ggplot(aes(longitude, latitude)) +
+  geom_point(color="blue")+
+  geom_point(data = data_set_sif_amazon |> filter(year == 2020) |> 
+               sample_n(10000),
+             aes(longitude,latitude),color="red", size=1)
+
+```
+
+## Agregação
+
+Criar o geadeado para a amazônia
+
+```{r}
+
+mat_coord <- amazon$geometry[[1]] |> as.matrix()
+
+dist <- 0.5
+lon_min <-min(mat_coord[,1])
+lon_max <-max(mat_coord[,1])
+lat_min <-min(mat_coord[,2])
+lat_max <-max(mat_coord[,2]) 
+grid_am <- expand.grid(lon=seq(lon_min,lon_max,dist),
+                       lat=seq(lat_min,lat_max,dist))
+amazon |> 
+  ggplot() +
+  geom_sf(fill="green4") +
+  theme_bw() +
+  geom_point(data=grid_am,aes(lon,lat))
+```
+
+criando a função de def_pol
+```{r}
+def_pol <- function(x, y, pol){
+  as.logical(sp::point.in.polygon(point.x = x,
+                                  point.y = y,
+                                  pol.x = pol[,1],
+                                  pol.y = pol[,2]))
+}
+```
+
+
+Filtrando os pontos do grid_am em função dos limites da amazônia legal
+
+```{r}
+grid_am_cut <- grid_am |>
+ mutate(
+    flag_am = def_pol(lon,lat,mat_coord),
+    )
+plot(grid_am_cut$lon[grid_am_cut$flag_am],grid_am_cut$lat[grid_am_cut$flag_am])
+```
+Observado a tabela do numero de observarções por ano e mês
+
+```{r}
+table(data_set_sif_amazon$year, data_set_sif_amazon$month)
+```
+
+Correção dos meses 4-6 para o ano de 2024 - SIF
+
+```{r}
+# sif_media <- grid_am_cut |> 
+#   filter(flag_am) |>  
+#   select(-flag_am) |>
+#   group_by(lon, lat) |>
+#   reframe(mes = 4:6) |>
+#   arrange(mes) |> 
+#   mutate(sif_est =0)
+# 
+# for(k in 1:nrow(sif_media)){
+#   sif_aux <- data_set_sif_amazon |>
+#     filter(month == sif_media$mes[k]) 
+#   d <- sqrt((sif_aux$longitude-sif_media$lon[k])^2+
+#               (sif_aux$latitude-sif_media$lat[k])^2)
+#   sif_media$sif_est[k] = data.frame(do=d[order(d)],po=order(d),sif=sif_aux$sif[order(d)]) |> 
+#     filter(do <=.5) |> 
+#     pull(sif) |> mean(na.rm=TRUE)
+# }
+# data_set_sif_amazon |> glimpse()
+# sif_media$sif_est |> is.na() |> sum()
+# write_rds(sif_media,"data-raw/sif_estimada_2024.rds")
+sif_estimada_2024 <- read_rds("data-raw/sif_estimada_2024.rds") |> 
+  rename( month = mes , longitude=lon, latitude=lat, sif = sif_est) |> 
+  mutate(day = 1,
+         year = 2024,
+         quality_flag=0,
+         daily_sif771 = NA,
+         daily_sif757 = NA,
+         date=make_date(year,month,day))
+data_set_sif_amazon <- data_set_sif_amazon |> rbind(sif_estimada_2024)
+```
+
+Observado a tabela do número de observarções por ano e mês após correção
+
+```{r}
+table(data_set_sif_amazon$year, data_set_sif_amazon$month)
+```
+
+Agregação das Bases
+
