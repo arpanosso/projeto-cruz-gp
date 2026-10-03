@@ -70,7 +70,7 @@ states <- read_state(showProgress = FALSE, year = 2020)
 ```
 
 
-Vizualizando o mapa da amazônia legal
+Vizualizando o polígono da amazônia legal
 ```{r}
 amazon |> 
   ggplot() +
@@ -84,21 +84,19 @@ amazon |>
 Carregando os dados criando variáveis temporais a partir da coluna `time` do data set original.
 
 ```{r}
-tictoc::tic()
-data_set_xco2 <- readr::read_rds("data/data-set-xco2-amazon.rds") |> 
-  dplyr::mutate(
-    time = lubridate::as_datetime(time, tz = "America/Sao_Paulo"),
-    year = lubridate::year(time),
-    month = lubridate::month(time),
-    day = lubridate::day(time),
+data_set_xco2 <- read_rds("data/data-set-xco2-amazon.rds") |> 
+  mutate(
+    time = as_datetime(time, tz = "America/Sao_Paulo"),
+    year = year(time),
+    month = month(time),
+    day = day(time),
   )
-tictoc::toc()
 ```
 
 
 Resumo rápido do banco de dados
 ```{r}
-dplyr::glimpse(data_set_xco2)
+glimpse(data_set_xco2)
 ```
 
 Resumo Completo do Banco de dados
@@ -116,7 +114,7 @@ amazon |>
   geom_point(data=data_set_xco2 |> 
   filter(year == 2020,
          flag_norte|flag_centroeste|flag_nordeste) |> 
-  sample_n(1000), aes(longitude,latitude))
+  sample_n(10000), aes(longitude,latitude))
 ```
 
 ### Filtrar o banco dados para amazônia legal
@@ -132,8 +130,7 @@ pol_amazon_y <- pol_amazon[,2]
 Criando a flag_amazon para posterior filtragem do banco de dados e salvando essa nova versão na pasta data.
 
 ```{r}
- #tictoc::tic()
- #data_set_xco2_amazon <- data_set_xco2 |>
+#data_set_xco2_amazon <- data_set_xco2 |>
 #filter(flag_norte|flag_centroeste|flag_nordeste) |>
  #  mutate(
   #   flag_amazon = sp::point.in.polygon(longitude,latitude,
@@ -180,26 +177,23 @@ amazon |>
 
 
 ```{r}
-tictoc::tic()
-data_set_sif <- readr::read_rds("data/data-set-sif.rds") |> 
-  dplyr::mutate(
-    time = lubridate::as_datetime(time, origin = "1990-01-01 00:00:00",
+data_set_sif <- read_rds("data/data-set-sif.rds") |> 
+  mutate(
+    time = as_datetime(time, origin = "1990-01-01 00:00:00",
                                    tz = "America/Sao_Paulo"),
-    year = lubridate::year(time),
-    month = lubridate::month(time),
-    day = lubridate::day(time),
+    year = year(time),
+    month = month(time),
+    day = day(time),
   )
-tictoc::toc()
+
 ```
 
 
 
 Resumo rápido do banco de dados
 ```{r}
-dplyr::glimpse(data_set_sif)
+glimpse(data_set_sif)
 ```
-
-
 
 Resumo Completo do Banco de dados
 
@@ -212,9 +206,9 @@ Criando a flag_amazon para posterior filtragem do banco de dados e salvando essa
 ```{r}
 #Amazonia Legal 
 # amazon <- geobr::read_amazon(showProgress = FALSE)
-para_pol <- states$geometry[5] |> purrr::pluck(1) |> as.matrix()
-amazon_pol <- amazon$geometry |> purrr::pluck(1) |> as.matrix()
-amazonas_pol <- states$geometry[3] |> purrr::pluck(1) |> as.matrix()
+para_pol <- states$geometry[5] |> pluck(1) |> as.matrix()
+amazon_pol <- amazon$geometry |> pluck(1) |> as.matrix()
+amazonas_pol <- states$geometry[3] |> pluck(1) |> as.matrix()
 ```
 
 ```{r}
@@ -392,7 +386,7 @@ ggplot(dados_sif_mensais, aes(x = data, y = sif_media, color = epoca, fill = epo
 
 #### Criando coluna de semestre
 ```{r}
-data_set_xco2_anomal <- readr::read_rds("data/data-set-xco2-anomal.rds")
+data_set_xco2_anomal <- read_rds("data/data-set-xco2-anomal.rds")
 data_set_xco2_anomal <- data_set_xco2_anomal %>%
   mutate(
     epoca = case_when(
@@ -434,11 +428,12 @@ data_set_xco2_anomal |>
 
 #### Análise da regressão linear simples para caracterização da tendencia XCO2
 ```{r}
-mod_trend_xco2 <- lm(xco2 ~ year,
+mod_trend_xco2 <- lm(xco2 ~ date,
                       data = data_set_xco2_anomal |>
                         filter(xco2_quality_flag == 0) |>
                         drop_na() |>
-                        mutate( year = year - min(year))
+                        mutate( year = year - min(year),
+                                date = as.numeric(date-min(date)))
  )
  mod_trend_xco2
 
@@ -457,7 +452,8 @@ mod_trend_xco2 <- lm(xco2 ~ year,
           year >= 2020 & year <= 2025) |>
    mutate(
      year_modif = year -min(year),
-     xco2_est = a_co2+b_co2*year_modif,
+     date_modif = as.numeric(date - min(date)),
+     xco2_est = a_co2+b_co2*date_modif,
      delta = xco2_est-xco2,
      xco2_detrend = (a_co2-delta) - (mean(xco2) - a_co2)
    ) |>
@@ -900,7 +896,7 @@ table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 #       month == month_i)
 #   d_sif <- sqrt((sif_aux$longitude-lon_i)^2+
 #               (sif_aux$latitude-lat_i)^2)
-#    
+# 
 #   ## organizando os dados em um data.frame
 #   data_frame_aux_sif <- data.frame(do=d_sif[order(d_sif)], # distância ordenadas
 #                                po=order(d_sif), # posição em relação ao auxiliar
@@ -921,7 +917,7 @@ table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 #       pull(sif) |>
 #       mean(na.rm=TRUE)
 #   }
-#   
+# 
 #   # filtrando dados da Xco2
 #   xco2_aux <- data_set_xco2_anomal_sem_tendencia |>
 #     filter(
@@ -929,7 +925,7 @@ table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 #       month == month_i)
 #   d_xco2 <- sqrt((xco2_aux$longitude-lon_i)^2+
 #               (xco2_aux$latitude-lat_i)^2)
-#  
+# 
 #   ## organizando os dados em um data.frame
 #   data_frame_aux_xco2 <- data.frame(do=d_xco2[order(d_xco2)], # distância ordenadas
 #                                po=order(d_xco2), # posição em relação ao auxiliar
@@ -952,11 +948,11 @@ table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 #   }
 # }
 # 
-# # esperado zero para os dois testes abaixo
+# # # esperado zero para os dois testes abaixo
 # sum(base_agregada$sif  |> is.na())
 # sum(base_agregada$xco2 |> is.na())
-
-# Salvando a base agregada
+# 
+# # Salvando a base agregada
 # base_agregada |> write_rds("data-raw/base-agregada.rds")
 
 # Carregando a base agregada
