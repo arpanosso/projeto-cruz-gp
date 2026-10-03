@@ -766,9 +766,9 @@ grid_am <- expand.grid(lon=seq(lon_min,lon_max,dist),
                        lat=seq(lat_min,lat_max,dist))
 amazon |> 
   ggplot() +
-  geom_sf(fill="green4") +
+  geom_sf(fill="aquamarine4",color="black") +
   theme_bw() +
-  geom_point(data=grid_am,aes(lon,lat))
+  geom_point(data=grid_am,aes(lon,lat), color="red",size=1)
 ```
 
 criando a função de def_pol
@@ -800,27 +800,57 @@ table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 Correção dos meses 4-6 para o ano de 2024 - SIF
 
 ```{r}
-# sif_media <- grid_am_cut |> 
-#   filter(flag_am) |>  
+# # Criando o arquivo para receber os valores calculados/observados
+# sif_novo <- grid_am_cut |>
+#   filter(flag_am) |>
 #   select(-flag_am) |>
 #   group_by(lon, lat) |>
 #   reframe(mes = 4:6) |>
-#   arrange(mes) |> 
+#   arrange(mes) |>
 #   mutate(sif_est =0)
 # 
-# for(k in 1:nrow(sif_media)){
+# # estrutura de repetição para preencher cada um dos pontos criados
+# for(k in 1:nrow(sif_novo)){
+#   ## Filtrando para o mês especifico, 4, 5 ou 6
 #   sif_aux <- data_set_sif_amazon |>
-#     filter(month == sif_media$mes[k]) 
-#   d <- sqrt((sif_aux$longitude-sif_media$lon[k])^2+
-#               (sif_aux$latitude-sif_media$lat[k])^2)
-#   sif_media$sif_est[k] = data.frame(do=d[order(d)],po=order(d),sif=sif_aux$sif[order(d)]) |> 
-#     filter(do <=.5) |> 
-#     pull(sif) |> mean(na.rm=TRUE)
+#     filter(month == sif_novo$mes[k])
+#   
+#   ## Calculando a distância entre o ponto alvo
+#   d <- sqrt((sif_aux$longitude-sif_novo$lon[k])^2+
+#               (sif_aux$latitude-sif_novo$lat[k])^2)
+#   
+#   ## organizando os dados em um data.frame
+#   data_frame_aux <- data.frame(do=d[order(d)], # distância ordenadas
+#                                po=order(d), # posição em relação ao auxiliar
+#                                sif=sif_aux$sif[order(d)]) # sif específica
+#   
+#   ## Critério de preenchimento se distância for menor que 0.25, tire a média,
+#   ## caso contrário, faça a média dos 7 mais póximos
+#   nrow_df <- data_frame_aux |> filter(do <=.25) |> nrow()
+#   
+#   if(nrow_df != 0){
+#     sif_novo$sif_est[k] = data_frame_aux |> 
+#       filter(do <=.25) |> 
+#       pull(sif) |> 
+#       mean(na.rm=TRUE)
+#   } else {
+#     sif_novo$sif_est[k] = data_frame_aux |> 
+#       slice(1:7) |> 
+#       pull(sif) |> 
+#       mean(na.rm=TRUE)
+#   } 
 # }
-# data_set_sif_amazon |> glimpse()
-# sif_media$sif_est |> is.na() |> sum()
-# write_rds(sif_media,"data-raw/sif_estimada_2024.rds")
-sif_estimada_2024 <- read_rds("data-raw/sif_estimada_2024.rds") |> 
+# 
+# # Verifiando a quantidade de NAs presentes no novos valores, o esperado é 
+# # zero
+# sif_novo$sif_est |> is.na() |> sum()
+# 
+# # salvando em um novo arquvio, em data-raw
+# write_rds(sif_novo,"data-raw/sif-estimada-2024.rds")
+
+# carregando e completando as demais colunas necessárias para agrupar com o
+# aquivo da sif original
+sif_estimada_2024 <- read_rds("data-raw/sif-estimada-2024.rds") |> 
   rename( month = mes , longitude=lon, latitude=lat, sif = sif_est) |> 
   mutate(day = 1,
          year = 2024,
@@ -837,5 +867,165 @@ Observado a tabela do número de observarções por ano e mês após correção
 table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 ```
 
-Agregação das Bases
+## Agregação das Bases data_set_sif_amazon e data_set_xco2_anomal_sem_tendencia
+ 
+```{r}
+# Criando o arquivo da base agregada
+# base_agregada <- grid_am_cut |>
+#   filter(flag_am) |>
+#   select(-flag_am) |>
+#   group_by(lon, lat) |>
+#   reframe(
+#     year = 2020:2024
+#   ) |>
+#   group_by(lon, lat, year) |>
+#   reframe(month = 1:12) |>
+#   mutate(xco2 = 0,
+#          sif = 0)
+# 
+# # Definindo a distância máxima de proximidade entre os pontos para agregação
+# dist_max <- 0.25
+# 
+# for(i in 1:nrow(base_agregada)){
+#   # definindo o ano e o mês e coordenadas
+#   year_i <- base_agregada |> slice(i) |> pull(year)
+#   month_i <- base_agregada |> slice(i) |> pull(month)
+#   lon_i <- base_agregada$lon[i]
+#   lat_i <- base_agregada$lat[i]
+# 
+#   # filtrando dados da SIF
+#   sif_aux <- data_set_sif_amazon |>
+#     filter(
+#       year == year_i,
+#       month == month_i)
+#   d_sif <- sqrt((sif_aux$longitude-lon_i)^2+
+#               (sif_aux$latitude-lat_i)^2)
+#    
+#   ## organizando os dados em um data.frame
+#   data_frame_aux_sif <- data.frame(do=d_sif[order(d_sif)], # distância ordenadas
+#                                po=order(d_sif), # posição em relação ao auxiliar
+#                                sif=sif_aux$sif[order(d_sif)]) # sif específica
+# 
+#   ## Critério de preenchimento se distância for menor que dist_max, tire a média,
+#   ## caso contrário, faça a média dos 7 mais póximos
+#   nrow_df_sif <- data_frame_aux_sif |> filter(do <= dist_max) |> nrow()
+# 
+#   if(nrow_df_sif != 0){
+#     base_agregada$sif[i] = data_frame_aux_sif |>
+#       filter(do <= dist_max) |>
+#       pull(sif) |>
+#       mean(na.rm=TRUE)
+#   } else {
+#     base_agregada$sif[i] = data_frame_aux_sif |>
+#       slice(1:7) |>
+#       pull(sif) |>
+#       mean(na.rm=TRUE)
+#   }
+#   
+#   # filtrando dados da Xco2
+#   xco2_aux <- data_set_xco2_anomal_sem_tendencia |>
+#     filter(
+#       year == year_i,
+#       month == month_i)
+#   d_xco2 <- sqrt((xco2_aux$longitude-lon_i)^2+
+#               (xco2_aux$latitude-lat_i)^2)
+#  
+#   ## organizando os dados em um data.frame
+#   data_frame_aux_xco2 <- data.frame(do=d_xco2[order(d_xco2)], # distância ordenadas
+#                                po=order(d_xco2), # posição em relação ao auxiliar
+#                                xco2=xco2_aux$xco2[order(d_xco2)]) # xco2 específica
+# 
+#   ## Critério de preenchimento se distância for menor que dist_max, tire a média,
+#   ## caso contrário, faça a média dos 7 mais póximos
+#   nrow_df_xco2 <- data_frame_aux_xco2 |> filter(do <= dist_max) |> nrow()
+# 
+#   if(nrow_df_xco2 != 0){
+#     base_agregada$xco2[i] = data_frame_aux_xco2 |>
+#       filter(do <= dist_max) |>
+#       pull(xco2) |>
+#       mean(na.rm=TRUE)
+#   } else {
+#     base_agregada$xco2[i] = data_frame_aux_xco2 |>
+#       slice(1:7) |>
+#       pull(xco2) |>
+#       mean(na.rm=TRUE)
+#   }
+# }
+# 
+# # esperado zero para os dois testes abaixo
+# sum(base_agregada$sif  |> is.na())
+# sum(base_agregada$xco2 |> is.na())
+
+# Salvando a base agregada
+# base_agregada |> write_rds("data-raw/base-agregada.rds")
+
+# Carregando a base agregada
+base_agregada <- read_rds("data/base-agregada.rds")
+```
+
+```{r}
+library(scales) # Necessário para formatar as datas no eixo X
+
+# 1. Agrupamento dos dados
+dados_processados <- base_agregada |> 
+  group_by(year, month) |> 
+  summarise(
+    xco2 = mean(xco2, na.rm = TRUE),
+    sif  = mean(sif, na.rm = TRUE),
+    .groups = "drop"
+  ) |> 
+  mutate(date = make_date(year, month, 1))
+
+# 2. Descobrir os limites reais para criar a escala perfeita
+min_xco2 <- min(dados_processados$xco2, na.rm = TRUE)
+max_xco2 <- max(dados_processados$xco2, na.rm = TRUE)
+min_sif  <- min(dados_processados$sif, na.rm = TRUE)
+max_sif  <- max(dados_processados$sif, na.rm = TRUE)
+
+# Funções matemáticas para transformar e destransformar os dados do SIF
+transformar_sif <- function(sif) {
+  ((sif - min_sif) / (max_sif - min_sif)) * (max_xco2 - min_xco2) + min_xco2
+}
+
+destransformar_sif <- function(xco2_escala) {
+  ((xco2_escala - min_xco2) / (max_xco2 - min_xco2)) * (max_sif - min_sif) + min_sif
+}
+
+# 3. Gerar o gráfico corrigido
+dados_processados |> 
+  ggplot(aes(x = date)) +
+  # Linha do XCO2 (Eixo Esquerdo)
+  geom_line(aes(y = xco2, color = "XCO2"), size = 1.2) +
+  # Linha do SIF (Transformada matematicamente para ocupar a mesma amplitude do XCO2)
+  geom_line(aes(y = transformar_sif(sif), color = "SIF"), size = 1.2) +
+  # Configuração dos Eixos Verticais
+  scale_y_continuous(
+    name = expression(paste(XCO, " (ppm)")),
+    # O eixo secundário faz o caminho inverso para exibir os valores reais do SIF
+    sec.axis = sec_axis(trans = destransformar_sif, name = "SIF (Fluorescência)")
+  ) +
+  # Eixo X das datas ajustado
+  scale_x_date(
+    date_labels = "%b %Y", 
+    date_breaks = "3 months"
+  ) +
+  # Definição explícita das cores para diferenciar as duas curvas
+  scale_color_manual(
+    values = c("XCO2" = "#2c3e50", "SIF" = "#27ae60"),
+    name = "Variáveis"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.minor = element_blank(),
+    legend.position = "top"
+  ) +
+  labs(
+    x = "Período",
+    title = expression(paste("Relação Temporal entre ", XCO, " e SIF")),
+    subtitle = "Variáveis reescalonadas dinamicamente para comparação de tendências",
+    caption = "Fonte: Dados da base_agregada"
+  )
+```
 

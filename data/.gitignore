@@ -3,3 +3,6 @@ data-set-xco2-filter.rds
 data-set-xco2-br.rds
 data-set-sif-br.rds
 data-set-xco2-amazon.rds
+data-set-sif-amazon.rds
+data-set-sif.rds
+data-set-xco2-anomal.rds
