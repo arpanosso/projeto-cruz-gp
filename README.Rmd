@@ -956,7 +956,8 @@ table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 # base_agregada |> write_rds("data-raw/base-agregada.rds")
 
 # Carregando a base agregada
-base_agregada <- read_rds("data/base-agregada.rds")
+# base_agregada_data <- read_rds("data/base-agregada.rds")
+base_agregada <- read_rds("data-raw/base-agregada.rds")
 ```
 
 ```{r}
