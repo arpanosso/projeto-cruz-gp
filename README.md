@@ -5,12 +5,12 @@
 
 ## 👩‍🔬 Autores
 
-- **Gabriela Pereira da Cruz**\
-  Graduanda em Engenharia Agronômica - FCAV/Unesp\
+- **Gabriela Pereira da Cruz**  
+  Graduanda em Engenharia Agronômica - FCAV/Unesp  
   Email: <gabriela.p.cruz@unesp.br>
 
-- **Prof. Dr. Alan Rodrigo Panosso**\
-  Coorientador — Departamento de Ciências Exatas - FCAV/Unesp\
+- **Prof. Dr. Alan Rodrigo Panosso**  
+  Coorientador — Departamento de Ciências Exatas - FCAV/Unesp  
   Email: <alan.panosso@unesp.br>
 
 ## 📁 Etapas do Projeto
@@ -807,7 +807,6 @@ print(dados_temporais)
 #### Estatistica do xco2 - com tendencia
 
 ``` r
-
 dados_xco2_mensais <- data_set_xco2_anomal %>%
   group_by(year, month) %>%
   summarise(
@@ -967,7 +966,6 @@ data_set_xco2_anomal_sem_tendencia |>
 Criar o geadeado para a amazônia
 
 ``` r
-
 mat_coord <- amazon$geometry[[1]] |> as.matrix()
 
 dist <- 0.5
@@ -1128,7 +1126,7 @@ table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 #   mutate(xco2 = 0,
 #          sif = 0)
 # 
-# # Definindo a distância máxima de proximidade entre os pontos para agregação
+# # # Definindo a distância máxima de proximidade entre os pontos para agregação
 # dist_max <- 0.25
 # 
 # for(i in 1:nrow(base_agregada)){
@@ -1147,13 +1145,16 @@ table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 #               (sif_aux$latitude-lat_i)^2)
 # 
 #   ## organizando os dados em um data.frame
-#   data_frame_aux_sif <- data.frame(do=d_sif[order(d_sif)], # distância ordenadas
-#                                po=order(d_sif), # posição em relação ao auxiliar
-#                                sif=sif_aux$sif[order(d_sif)]) # sif específica
+#   data_frame_aux_sif <- data.frame(
+#     do=d_sif[order(d_sif)], # distância ordenadas
+#     po=order(d_sif), # posição em relação ao auxiliar
+#     sif=sif_aux$sif[order(d_sif)]) # sif específica
 # 
 #   ## Critério de preenchimento se distância for menor que dist_max, tire a média,
 #   ## caso contrário, faça a média dos 7 mais póximos
-#   nrow_df_sif <- data_frame_aux_sif |> filter(do <= dist_max) |> nrow()
+#   nrow_df_sif <- data_frame_aux_sif |> 
+#     filter(do <= dist_max) |> 
+#     nrow()
 # 
 #   if(nrow_df_sif != 0){
 #     base_agregada$sif[i] = data_frame_aux_sif |>
@@ -1200,13 +1201,41 @@ table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 # # # esperado zero para os dois testes abaixo
 # sum(base_agregada$sif  |> is.na())
 # sum(base_agregada$xco2 |> is.na())
+# nrow(base_agregada)
 # 
 # # Salvando a base agregada
-# base_agregada |> write_rds("data-raw/base-agregada.rds")
+# write_rds(base_agregada, "data-raw/base-agregada.rds")
 
 # Carregando a base agregada
-base_agregada <- read_rds("data/base-agregada.rds")
+base_agregada <- read_rds("data-raw/base-agregada.rds")
+table(base_agregada$year,base_agregada$month)
+#>       
+#>           1    2    3    4    5    6    7    8    9   10   11   12
+#>   2020 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648
+#>   2021 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648
+#>   2022 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648
+#>   2023 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648
+#>   2024 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648
 ```
+
+## Mapeando XCO2
+
+``` r
+amazon |>
+   ggplot() +
+     geom_sf(aes_string(), color="black",
+              size=.05, show.legend = TRUE) +
+  theme_minimal() +
+  geom_point(
+    data = base_agregada |>
+      filter(year == 2020,
+             month ==1),
+  aes(lon,lat),
+  color = "red"
+  )
+```
+
+![](README_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
 
 ``` r
 library(scales) # Necessário para formatar as datas no eixo X
@@ -1274,4 +1303,4 @@ dados_processados |>
   )
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-49-1.png)<!-- -->
