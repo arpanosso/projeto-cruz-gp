@@ -56,6 +56,9 @@ Formato dos arquivos:
 library(tidyverse)
 library(geobr)
 library(sp)
+library(sf)
+library(rnaturalearth)
+library(ggspatial)
 ```
 
 
@@ -970,13 +973,99 @@ amazon |>
      geom_sf(aes_string(), color="black",
               size=.05, show.legend = TRUE) +
   theme_minimal() +
-  geom_point(
+  geom_tile(
     data = base_agregada |>
       filter(year == 2020,
              month ==1),
-  aes(lon,lat),
-  color = "red"
+  aes(lon,lat,fill = xco2),
+  # color = "red"
   )
+```
+
+
+```{r}
+# sf_use_s2(FALSE)
+
+# Camadas de contexto (feitas uma vez só)
+# paises <- ne_countries(scale = "medium", returnclass = "sf")
+# 
+# estados_al <- read_state(year = 2020, showProgress = FALSE) |>
+#   st_transform(st_crs(amazon)) |>
+#   st_intersection(st_union(amazon))
+# 
+# meses <- c("Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+#            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro")
+# 
+# bb <- st_bbox(amazon)
+# 
+# # Função genérica
+# mapa_var <- function(ano, mes, var, rotulo, paleta = "YlGn", direcao = 1,
+#                      limites) {
+#   dados <- base_agregada |> filter(year == ano, month == mes)
+#   if (nrow(dados) == 0 || all(is.na(dados[[var]]))) return(invisible(NULL))
+# 
+#   ggplot() +
+#     geom_sf(data = paises, fill = "grey97", color = "grey75", linewidth = 0.2) +
+#     geom_tile(data = dados, aes(lon, lat, fill = .data[[var]])) +
+#     geom_sf(data = estados_al, fill = NA, color = "grey35", linewidth = 0.25) +
+#     geom_sf(data = amazon, fill = NA, color = "black", linewidth = 0.6) +
+#     scale_fill_distiller(
+#       palette = paleta, direction = direcao,
+#       limits = limites, oob = scales::squish,
+#       na.value = "grey60", name = rotulo
+#     ) +
+#     coord_sf(xlim = c(bb["xmin"] - 1, bb["xmax"] + 1),
+#              ylim = c(bb["ymin"] - 1, bb["ymax"] + 1),
+#              expand = FALSE) +
+#     annotation_north_arrow(location = "tr",
+#                            style = north_arrow_fancy_orienteering,
+#                            height = unit(1.2, "cm"), width = unit(1.2, "cm")) +
+#     annotation_scale(location = "bl", width_hint = 0.25) +
+#     labs(x = "Longitude", y = "Latitude",
+#          title = paste(meses[mes], "de", ano)) +
+#     theme_bw(base_size = 13) +
+#     theme(
+#       panel.background  = element_rect(fill = "aliceblue"),
+#       panel.grid        = element_line(color = "grey90", linewidth = 0.2),
+#       legend.key.height = unit(1.2, "cm"),
+#       plot.title        = element_text(face = "bold")
+#     )
+# }
+# 
+# # Loop genérico: limites "global" (todos os anos) ou "ano" (um por ano)
+# gerar_mapas <- function(var, rotulo, paleta, direcao = 1,
+#                         tipo_lim = c("global", "ano"), pasta) {
+#   tipo_lim <- match.arg(tipo_lim)
+#   dir.create(pasta, recursive = TRUE, showWarnings = FALSE)
+# 
+#   lim_global <- quantile(base_agregada[[var]], c(0.01, 0.99), na.rm = TRUE)
+# 
+#   expand_grid(ano = 2020:2024, mes = 1:12) |>
+#     pwalk(\(ano, mes) {
+#       lim <- if (tipo_lim == "global") lim_global else
+#         quantile(base_agregada[[var]][base_agregada$year == ano],
+#                  c(0.01, 0.99), na.rm = TRUE)
+# 
+#       plt <- mapa_var(ano, mes, var, rotulo, paleta, direcao, lim)
+#       if (!is.null(plt)) {
+#         ggsave(sprintf("%s/%s_%d_%02d.png", pasta, var, ano, mes),
+#                plt, width = 8, height = 6, dpi = 300,
+#                device = ragg::agg_png)
+#       }
+#       rm(plt); invisible(gc())
+#     })
+# }
+# 
+# # XCO2 (ppm): azul = baixo, vermelho = alto; limites por ano
+# gerar_mapas(var = "xco2", rotulo = expression(XCO[2]~(ppm)),
+#             paleta = "RdYlBu", direcao = -1,
+#             tipo_lim = "ano", pasta = "img/xco2")
+# 
+# # SIF continua funcionando igual
+# gerar_mapas(var = "sif",
+#             rotulo = expression(SIF~(W~m^{-2}~sr^{-1}~mu*m^{-1})),
+#             paleta = "YlGn", direcao = 1,
+#             tipo_lim = "global", pasta = "img/sif")
 ```
 
 
@@ -1040,7 +1129,7 @@ dados_processados |>
   ) +
   labs(
     x = "Período",
-    title = expression(paste("Relação Temporal entre ", XCO, " e SIF")),
+    title = expression(paste("Relação Temporal entre ", XCO[2], " e SIF")),
     subtitle = "Variáveis reescalonadas dinamicamente para comparação de tendências",
     caption = "Fonte: Dados da base_agregada"
   )
