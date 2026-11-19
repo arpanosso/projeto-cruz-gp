@@ -1122,10 +1122,12 @@ dados_processados |>
   )
 ```
 
-<iframe src="https://raw.githubusercontent.com/arpanosso/projeto-cruz-gp/master/img/sif/sif_animacao.gif" width="820" height="620" style="border:none; display:block; margin:auto;">
+<p align="center">
 
-</iframe>
+<img src="img/sif/sif_animacao.gif" width="820">
+</p>
 
-<iframe src="https://raw.githubusercontent.com/arpanosso/projeto-cruz-gp/master/img/xco2/xco2_animacao.gif" width="820" height="620" style="border:none; display:block; margin:auto;">
-
-</iframe>
+<figure>
+<img src="img/xco2/xco2_animacao.gif" alt="Animação mensal do SIF" />
+<figcaption aria-hidden="true">Animação mensal do SIF</figcaption>
+</figure>
