@@ -1392,3 +1392,7 @@ dados_processados |>
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-50-1.png)<!-- -->
+
+<iframe src="img/sif/sif_animacao.gif" width="820" height="620" style="border:none; display:block; margin:auto;">
+
+</iframe>
