@@ -65,6 +65,8 @@ amazon |>
   theme_bw()
 ```
 
+![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
 #### Carregando os dados
 
 Carregando os dados criando variáveis temporais a partir da coluna
@@ -84,6 +86,24 @@ Resumo rápido do banco de dados
 
 ``` r
 glimpse(data_set_xco2)
+#> Rows: 2,072,749
+#> Columns: 16
+#> $ longitude         <dbl> -57.24859, -60.25506, -60.25922, -60.26331, -60.2603…
+#> $ latitude          <dbl> -16.006199, -2.370965, -2.352430, -2.333827, -2.3444…
+#> $ time              <dttm> 2020-01-02 14:26:32, 2020-01-02 14:30:34, 2020-01-0…
+#> $ xco2              <dbl> 408.3632, 410.4371, 411.5206, 411.4840, 413.7887, 41…
+#> $ xco2_quality_flag <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+#> $ xco2_incerteza    <dbl> 0.6413727, 0.5051642, 0.5171114, 0.5131139, 0.517742…
+#> $ path              <chr> "data-raw/2020/OCO2/oco2_LtCO2_200102_B11210Ar_24091…
+#> $ year              <dbl> 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020…
+#> $ month             <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+#> $ day               <int> 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2…
+#> $ flag_norte        <lgl> FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRU…
+#> $ flag_nordeste     <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FAL…
+#> $ flag_sul          <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FAL…
+#> $ flag_centroeste   <lgl> TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS…
+#> $ flag_suldeste     <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FAL…
+#> $ flag_amazon       <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
 ```
 
 Resumo Completo do Banco de dados
@@ -91,6 +111,58 @@ Resumo Completo do Banco de dados
 ``` r
 skimr::skim(data_set_xco2)
 ```
+
+|                                                  |               |
+|:-------------------------------------------------|:--------------|
+| Name                                             | data_set_xco2 |
+| Number of rows                                   | 2072749       |
+| Number of columns                                | 16            |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_   |               |
+| Column type frequency:                           |               |
+| character                                        | 1             |
+| logical                                          | 5             |
+| numeric                                          | 9             |
+| POSIXct                                          | 1             |
+| \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ |               |
+| Group variables                                  | None          |
+
+Data summary
+
+**Variable type: character**
+
+| skim_variable | n_missing | complete_rate | min | max | empty | n_unique | whitespace |
+|:--------------|----------:|--------------:|----:|----:|------:|---------:|-----------:|
+| path          |         0 |             1 |  63 |  63 |     0 |     2550 |          0 |
+
+**Variable type: logical**
+
+| skim_variable   | n_missing | complete_rate | mean | count                     |
+|:----------------|----------:|--------------:|-----:|:--------------------------|
+| flag_norte      |         0 |             1 | 0.56 | TRU: 1169710, FAL: 903039 |
+| flag_nordeste   |         0 |             1 | 0.08 | FAL: 1916299, TRU: 156450 |
+| flag_sul        |         0 |             1 | 0.00 | FAL: 2072749              |
+| flag_centroeste |         0 |             1 | 0.36 | FAL: 1326132, TRU: 746617 |
+| flag_suldeste   |         0 |             1 | 0.00 | FAL: 2072749              |
+
+**Variable type: numeric**
+
+| skim_variable | n_missing | complete_rate | mean | sd | p0 | p25 | p50 | p75 | p100 | hist |
+|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|
+| longitude | 0 | 1 | -55.49 | 6.55 | -73.97 | -59.55 | -55.12 | -50.36 | -44.00 | ▂▃▇▇▆ |
+| latitude | 0 | 1 | -9.33 | 4.63 | -18.04 | -12.66 | -9.70 | -6.63 | 5.00 | ▃▇▆▂▁ |
+| xco2 | 0 | 1 | 416.16 | 11.08 | 330.01 | 412.93 | 415.86 | 419.08 | 4425.28 | ▇▁▁▁▁ |
+| xco2_quality_flag | 0 | 1 | 0.54 | 0.50 | 0.00 | 0.00 | 1.00 | 1.00 | 1.00 | ▇▁▁▁▇ |
+| xco2_incerteza | 0 | 1 | 0.63 | 0.16 | 0.20 | 0.51 | 0.60 | 0.71 | 4.46 | ▇▁▁▁▁ |
+| year | 0 | 1 | 2021.80 | 1.40 | 2020.00 | 2021.00 | 2022.00 | 2023.00 | 2024.00 | ▇▇▆▆▅ |
+| month | 0 | 1 | 7.17 | 2.06 | 1.00 | 6.00 | 7.00 | 8.00 | 12.00 | ▁▂▇▆▂ |
+| day | 0 | 1 | 15.34 | 9.62 | 1.00 | 6.00 | 16.00 | 24.00 | 31.00 | ▇▅▃▅▆ |
+| flag_amazon | 0 | 1 | 1.00 | 0.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | ▁▁▇▁▁ |
+
+**Variable type: POSIXct**
+
+| skim_variable | n_missing | complete_rate | min | max | median | n_unique |
+|:---|---:|---:|:---|:---|:---|---:|
+| time | 0 | 1 | 2020-01-01 12:54:37 | 2024-12-31 09:32:34 | 2022-05-31 14:27:11 | 2072685 |
 
 ``` r
 amazon |> 
@@ -102,6 +174,8 @@ amazon |>
          flag_norte|flag_centroeste|flag_nordeste) |> 
   sample_n(10000), aes(longitude,latitude))
 ```
+
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ### Filtrar o banco dados para amazônia legal
 
@@ -147,6 +221,8 @@ amazon |>
   sample_n(1000), aes(longitude,latitude))
 ```
 
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
 ``` r
 amazon |> 
   ggplot() +
@@ -157,6 +233,8 @@ amazon |>
          flag_norte|flag_centroeste|flag_nordeste) |> 
   sample_n(1000), aes(longitude,latitude))
 ```
+
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ### Ajustando para SIF
 
@@ -175,6 +253,25 @@ Resumo rápido do banco de dados
 
 ``` r
 glimpse(data_set_sif)
+#> Rows: 27,462,772
+#> Columns: 17
+#> $ time               <dttm> 2020-01-01 13:41:22, 2020-01-01 13:41:23, 2020-01-…
+#> $ sza                <dbl> 24.44861, 24.44421, 24.43042, 24.42725, 24.41541, 2…
+#> $ vza                <dbl> 0.15972900, 0.15936279, 0.36914062, 0.25946045, 0.4…
+#> $ saz                <dbl> 264.3497, 264.1766, 264.1306, 263.6334, 263.6737, 2…
+#> $ vaz                <dbl> 349.4449463, 349.2926025, 9.9569092, 0.1663208, 11.…
+#> $ longitude          <dbl> -42.86682, -42.88593, -42.90643, -42.95166, -42.962…
+#> $ latitude           <dbl> -22.83197, -22.75171, -22.72925, -22.49982, -22.517…
+#> $ sif740             <dbl> 2.0291252, 1.9367952, 1.2935743, -0.2750387, 2.0776…
+#> $ sif740_uncertainty <dbl> 0.4810228, 0.4750776, 0.5201931, 0.5690994, 0.62952…
+#> $ daily_sif740       <dbl> 0.78077316, 0.74496078, 0.49750042, -0.10566425, 0.…
+#> $ daily_sif757       <dbl> 0.51616192, 0.69380951, 0.22501564, 0.10593128, 0.3…
+#> $ daily_sif771       <dbl> 0.34991264, 0.19964695, 0.29221249, -0.16454506, 0.…
+#> $ quality_flag       <int> 0, 1, 0, 2, 2, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, …
+#> $ path               <chr> "data-raw/2020/OCO2 SIF/oco2_LtSIF_200101_B11012Ar_…
+#> $ year               <dbl> 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, 202…
+#> $ month              <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+#> $ day                <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
 ```
 
 Resumo Completo do Banco de dados
@@ -248,6 +345,8 @@ data_set_sif_amazon |>
   )
 ```
 
+![](README_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+
 ### 2 🔎 Análises iniciais
 
 #### Carregando pacotes
@@ -294,7 +393,8 @@ data_set_sif_amazon |>
   theme_bw()
 ```
 
-#### Estatistica do SIF
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- --> \####
+Estatistica do SIF
 
 ``` r
 dados_sif_mensais <- data_set_sif_amazon %>%
@@ -338,7 +438,8 @@ ggplot(dados_sif_mensais, aes(x = data, y = sif_media, color = epoca, fill = epo
   )
 ```
 
-#### Carregando os dados de xco2 e filtrar - CONTINUAR DAQUI
+![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- --> \####
+Carregando os dados de xco2 e filtrar - CONTINUAR DAQUI
 
 ``` r
 # data_set_xco2_amazon <- readr::read_rds("../data/data-set-xco2-amazon00.rds")
@@ -382,6 +483,41 @@ data_set_xco2_anomal <- data_set_xco2_anomal %>%
     )
   )
 head(data_set_xco2_amazon)
+#>   longitude   latitude                time     xco2 xco2_quality_flag
+#> 1 -57.24859 -16.006199 2020-01-02 14:26:32 408.3632                 1
+#> 2 -60.25506  -2.370965 2020-01-02 14:30:34 410.4371                 1
+#> 3 -60.25922  -2.352430 2020-01-02 14:30:34 411.5206                 1
+#> 4 -60.26331  -2.333827 2020-01-02 14:30:35 411.4840                 1
+#> 5 -60.26037  -2.344424 2020-01-02 14:30:35 413.7887                 1
+#> 6 -60.25745  -2.355058 2020-01-02 14:30:35 411.1546                 1
+#>   xco2_incerteza
+#> 1      0.6413727
+#> 2      0.5051642
+#> 3      0.5171114
+#> 4      0.5131139
+#> 5      0.5177423
+#> 6      0.4935850
+#>                                                              path year month
+#> 1 data-raw/2020/OCO2/oco2_LtCO2_200102_B11210Ar_240913160615s.nc4 2020     1
+#> 2 data-raw/2020/OCO2/oco2_LtCO2_200102_B11210Ar_240913160615s.nc4 2020     1
+#> 3 data-raw/2020/OCO2/oco2_LtCO2_200102_B11210Ar_240913160615s.nc4 2020     1
+#> 4 data-raw/2020/OCO2/oco2_LtCO2_200102_B11210Ar_240913160615s.nc4 2020     1
+#> 5 data-raw/2020/OCO2/oco2_LtCO2_200102_B11210Ar_240913160615s.nc4 2020     1
+#> 6 data-raw/2020/OCO2/oco2_LtCO2_200102_B11210Ar_240913160615s.nc4 2020     1
+#>   day flag_norte flag_nordeste flag_sul flag_centroeste flag_suldeste
+#> 1   2      FALSE         FALSE    FALSE            TRUE         FALSE
+#> 2   2       TRUE         FALSE    FALSE           FALSE         FALSE
+#> 3   2       TRUE         FALSE    FALSE           FALSE         FALSE
+#> 4   2       TRUE         FALSE    FALSE           FALSE         FALSE
+#> 5   2       TRUE         FALSE    FALSE           FALSE         FALSE
+#> 6   2       TRUE         FALSE    FALSE           FALSE         FALSE
+#>   flag_amazon
+#> 1           1
+#> 2           1
+#> 3           1
+#> 4           1
+#> 5           1
+#> 6           1
 ```
 
 #### Visualização de Histograma xco2
@@ -396,6 +532,8 @@ data_set_xco2_anomal |>
   facet_wrap(~year, scales = "free") +
   theme_bw()
 ```
+
+![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 #### Tendencia regional, r2 e plotagem de gráfico
 
@@ -414,6 +552,8 @@ data_set_xco2_anomal |>
  labs(x="Ano",y="xco2")
 ```
 
+![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+
 #### Análise da regressão linear simples para caracterização da tendencia XCO2
 
 ``` r
@@ -425,8 +565,37 @@ mod_trend_xco2 <- lm(xco2 ~ date,
                                 date = as.numeric(date-min(date)))
  )
  mod_trend_xco2
+#> 
+#> Call:
+#> lm(formula = xco2 ~ date, data = mutate(drop_na(filter(data_set_xco2_anomal, 
+#>     xco2_quality_flag == 0)), year = year - min(year), date = as.numeric(date - 
+#>     min(date))))
+#> 
+#> Coefficients:
+#> (Intercept)         date  
+#>   4.104e+02    6.915e-03
 
  summary.lm(mod_trend_xco2)
+#> 
+#> Call:
+#> lm(formula = xco2 ~ date, data = mutate(drop_na(filter(data_set_xco2_anomal, 
+#>     xco2_quality_flag == 0)), year = year - min(year), date = as.numeric(date - 
+#>     min(date))))
+#> 
+#> Residuals:
+#>      Min       1Q   Median       3Q      Max 
+#> -24.3515  -0.8542  -0.0152   0.8325  10.8539 
+#> 
+#> Coefficients:
+#>              Estimate Std. Error t value Pr(>|t|)    
+#> (Intercept) 4.104e+02  2.733e-03  150152   <2e-16 ***
+#> date        6.915e-03  2.819e-06    2453   <2e-16 ***
+#> ---
+#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#> 
+#> Residual standard error: 1.395 on 945913 degrees of freedom
+#> Multiple R-squared:  0.8641, Adjusted R-squared:  0.8641 
+#> F-statistic: 6.017e+06 on 1 and 945913 DF,  p-value: < 2.2e-16
 ```
 
 #### retirando a tendencia e separando por quadrimestre, estou retirando \# a tendencia e substituindo o arquivo que existia com tendencia, \#para o sem tendencia
@@ -469,6 +638,8 @@ data_set_xco2_anomal_sem_tendencia |>
   theme_bw()
 ```
 
+![](README_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+
 #### Plotando gráfico da distribuição de xco2 com tendencia por ano
 
 #### separado por semestre
@@ -495,6 +666,8 @@ data_set_xco2_anomal %>%
    )
 ```
 
+![](README_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
+
 #### Plotando gráfico da distribuição de xco2 sem tendencia por ano
 
 #### separado por semestre
@@ -520,6 +693,8 @@ data_set_xco2_anomal_sem_tendencia %>%
      y = "Ano"
    )
 ```
+
+![](README_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
 
 #### Anomalia de xco2, criando a coluna.
 
@@ -562,6 +737,8 @@ data_set_xco2_anomal %>%
   theme_ridges()
 ```
 
+![](README_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+
 #### Anomalia de xco2 sem tendencia
 
 ``` r
@@ -585,6 +762,8 @@ data_set_xco2_anomal_sem_tendencia %>%
     coord_cartesian(xlim = c(-5, 5))+
   theme_ridges()
 ```
+
+![](README_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
 
 #### Observando dados de anomalia
 
@@ -613,6 +792,19 @@ data_set_xco2_anomal_sem_tendencia %>%
       data = as.Date(paste(year, mes_representativo, "15", sep = "-"))
     )
 print(dados_temporais)
+#> # A tibble: 10 × 6
+#>     year epoca        anomalia_media desvio_padrao mes_representativo data      
+#>    <dbl> <fct>                 <dbl>         <dbl>              <dbl> <date>    
+#>  1  2020 Chuvosa (Ja…        0.00640         1.26                   3 2020-03-15
+#>  2  2020 Seca (Jul-D…        0.0184          1.01                   9 2020-09-15
+#>  3  2021 Chuvosa (Ja…        0.0483          1.21                   3 2021-03-15
+#>  4  2021 Seca (Jul-D…        0.0333          1.09                   9 2021-09-15
+#>  5  2022 Chuvosa (Ja…        0.0627          1.13                   3 2022-03-15
+#>  6  2022 Seca (Jul-D…        0.0207          1.01                   9 2022-09-15
+#>  7  2023 Chuvosa (Ja…        0.0397          1.29                   3 2023-03-15
+#>  8  2023 Seca (Jul-D…        0.0348          1.03                   9 2023-09-15
+#>  9  2024 Chuvosa (Ja…        0.0313          1.11                   3 2024-03-15
+#> 10  2024 Seca (Jul-D…        0.00856         0.902                  9 2024-09-15
 ```
 
 #### Estatistica do xco2 - com tendencia
@@ -666,6 +858,8 @@ ggplot(dados_xco2_mensais, aes(x = data, y = xco2_media, color = epoca, fill = e
   )
 ```
 
+![](README_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
+
 #### Estatistica do xco2 - SEM tendencia
 
 ``` r
@@ -715,14 +909,47 @@ ggplot(dados_xco2_mensais, aes(x = data, y = xco2_media, color = epoca, fill = e
   )
 ```
 
+![](README_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
+
 ## Agregar as bases
 
 ``` r
 data_set_xco2_anomal_sem_tendencia |> glimpse()
+#> Rows: 945,915
+#> Columns: 17
+#> $ date            <date> 2020-01-02, 2020-01-02, 2020-01-02, 2020-01-02, 2020-…
+#> $ longitude       <dbl> -60.37844, -60.37955, -60.38064, -60.37898, -60.37367,…
+#> $ latitude        <dbl> -1.831812, -1.823639, -1.815491, -1.818069, -1.839675,…
+#> $ xco2_trend      <dbl> 411.7547, 412.6686, 411.9518, 411.3929, 411.8737, 411.…
+#> $ year            <dbl> 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, …
+#> $ month           <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+#> $ day             <int> 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, …
+#> $ flag_norte      <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, …
+#> $ flag_nordeste   <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+#> $ flag_sul        <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+#> $ flag_centroeste <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+#> $ flag_suldeste   <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+#> $ flag_amazon     <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+#> $ xco2_anomalia   <dbl> 1.3588346, 2.2727751, 1.5559172, 0.9970182, 1.4778532,…
+#> $ nobs            <int> 69, 69, 69, 69, 69, 69, 69, 69, 69, 69, 69, 69, 69, 69…
+#> $ epoca           <chr> "Jan_Jun", "Jan_Jun", "Jan_Jun", "Jan_Jun", "Jan_Jun",…
+#> $ xco2            <dbl> 406.0470, 406.9609, 406.2441, 405.6852, 406.1660, 406.…
 ```
 
 ``` r
 data_set_sif_amazon |> glimpse()
+#> Rows: 4,880,724
+#> Columns: 10
+#> $ longitude    <dbl> -45.70892, -45.71320, -45.71759, -45.83588, -45.83600, -4…
+#> $ latitude     <dbl> -10.237732, -10.237305, -10.217163, -9.704224, -9.713989,…
+#> $ date         <date> 2020-01-01, 2020-01-01, 2020-01-01, 2020-01-01, 2020-01-…
+#> $ sif          <dbl> 0.17767024, 0.07650542, 0.15871572, -0.01399350, 0.214861…
+#> $ daily_sif757 <dbl> -0.02461338, -0.01064396, 0.01721573, -0.17687321, 0.2861…
+#> $ daily_sif771 <dbl> 0.25330257, 0.10910320, 0.20014381, 0.09925747, 0.0956955…
+#> $ quality_flag <int> 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …
+#> $ year         <dbl> 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, 2020, 202…
+#> $ month        <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
+#> $ day          <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
 ```
 
 ``` r
@@ -734,6 +961,8 @@ data_set_xco2_anomal_sem_tendencia |>
                sample_n(10000),
              aes(longitude,latitude),color="red", size=1)
 ```
+
+![](README_files/figure-gfm/unnamed-chunk-40-1.png)<!-- -->
 
 ## Agregação
 
@@ -756,6 +985,8 @@ amazon |>
   geom_point(data=grid_am,aes(lon,lat), color="red",size=1)
 ```
 
+![](README_files/figure-gfm/unnamed-chunk-41-1.png)<!-- -->
+
 criando a função de def_pol
 
 ``` r
@@ -777,10 +1008,25 @@ grid_am_cut <- grid_am |>
 plot(grid_am_cut$lon[grid_am_cut$flag_am],grid_am_cut$lat[grid_am_cut$flag_am])
 ```
 
-Observado a tabela do numero de observarções por ano e mês
+![](README_files/figure-gfm/unnamed-chunk-43-1.png)<!-- --> Observado a
+tabela do numero de observarções por ano e mês
 
 ``` r
 table(data_set_sif_amazon$year, data_set_sif_amazon$month)
+#>       
+#>             1      2      3      4      5      6      7      8      9     10
+#>   2020  43722  36087  64328  60429  96955 127991 169798 152372 159349 104461
+#>   2021  55167  38753  61544  73699 120300 115531 145476  94815 140819  93000
+#>   2022  65728  38743  57488  87831  95041 103496 173640 137748 156293  99375
+#>   2023  60425  31800  66159  72825  97156 129907 188325 148389 155218  59541
+#>   2024  29148  27273  26394      0      0      0  72708  99636  70805  59561
+#>       
+#>            11     12
+#>   2020  71557  59992
+#>   2021  67162  41446
+#>   2022  94228  61521
+#>   2023  24336  16719
+#>   2024  48980  29534
 ```
 
 Correção dos meses 4-6 para o ano de 2024 - SIF
@@ -851,6 +1097,20 @@ Observado a tabela do número de observarções por ano e mês após correção
 
 ``` r
 table(data_set_sif_amazon$year, data_set_sif_amazon$month)
+#>       
+#>             1      2      3      4      5      6      7      8      9     10
+#>   2020  43722  36087  64328  60429  96955 127991 169798 152372 159349 104461
+#>   2021  55167  38753  61544  73699 120300 115531 145476  94815 140819  93000
+#>   2022  65728  38743  57488  87831  95041 103496 173640 137748 156293  99375
+#>   2023  60425  31800  66159  72825  97156 129907 188325 148389 155218  59541
+#>   2024  29148  27273  26394   1648   1648   1648  72708  99636  70805  59561
+#>       
+#>            11     12
+#>   2020  71557  59992
+#>   2021  67162  41446
+#>   2022  94228  61521
+#>   2023  24336  16719
+#>   2024  48980  29534
 ```
 
 ## Agregação das Bases data_set_sif_amazon e data_set_xco2_anomal_sem_tendencia
@@ -952,6 +1212,13 @@ table(data_set_sif_amazon$year, data_set_sif_amazon$month)
 # Carregando a base agregada
 base_agregada <- read_rds("data-raw/base-agregada.rds")
 table(base_agregada$year,base_agregada$month)
+#>       
+#>           1    2    3    4    5    6    7    8    9   10   11   12
+#>   2020 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648
+#>   2021 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648
+#>   2022 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648
+#>   2023 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648
+#>   2024 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648 1648
 ```
 
 ## Mapeando XCO2
@@ -970,6 +1237,8 @@ amazon |>
   # color = "red"
   )
 ```
+
+![](README_files/figure-gfm/unnamed-chunk-48-1.png)<!-- -->
 
 ``` r
 # sf_use_s2(FALSE)
@@ -1121,6 +1390,8 @@ dados_processados |>
     caption = "Fonte: Dados da base_agregada"
   )
 ```
+
+![](README_files/figure-gfm/unnamed-chunk-50-1.png)<!-- -->
 
 <p align="center">
 
